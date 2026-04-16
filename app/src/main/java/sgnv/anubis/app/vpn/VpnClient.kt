@@ -17,6 +17,8 @@ enum class VpnClientType(
     HAPP("Play", "com.happproxy", brand = "Happ"),
     HAPP_GITHUB("Github", "su.happ.proxyutility", brand = "Happ"),
     V2RAY_TUN("v2rayTun", "com.v2raytun.android"),
+    OLCNG("GitHub", "xyz.zarazaex.olc", brand = "olcng"),
+    OLCNG_FDROID("F-Droid", "xyz.zarazaex.olc.fdroid", brand = "olcng"),
     V2BOX("V2Box", "dev.hexasoftware.v2box");
 
     /** "v2rayNG (Play)" for branded variants, "NekoBox" for standalones. */
@@ -222,6 +224,30 @@ object VpnClientControls {
                 "-n", "com.v2raytun.android/.receiver.WidgetProvider1x1"
             ),
         ),
+        // olcng (OpenLibreCommunity fork of v2rayNG): same widget-broadcast pattern, action
+        // prefix mirrors applicationId (xyz.zarazaex.olc).
+        VpnClientType.OLCNG to VpnClientControl(
+            clientType = VpnClientType.OLCNG,
+            mode = VpnControlMode.TOGGLE,
+            startCommand = arrayOf(
+                "am", "broadcast",
+                "-a", "xyz.zarazaex.olc.action.widget.click",
+                "-n", "xyz.zarazaex.olc/.receiver.WidgetProvider"
+            ),
+        ),
+
+        // olcng F-Droid: applicationIdSuffix adds ".fdroid", Java package of the receiver stays
+        // xyz.zarazaex.olc — same split as v2rayNG F-Droid, so the component uses the full path.
+        VpnClientType.OLCNG_FDROID to VpnClientControl(
+            clientType = VpnClientType.OLCNG_FDROID,
+            mode = VpnControlMode.TOGGLE,
+            startCommand = arrayOf(
+                "am", "broadcast",
+                "-a", "xyz.zarazaex.olc.fdroid.action.widget.click",
+                "-n", "xyz.zarazaex.olc.fdroid/xyz.zarazaex.olc.receiver.WidgetProvider"
+            ),
+        ),
+
 
         // V2Box: widget broadcast toggle (discovered via jadx analysis)
         VpnClientType.V2BOX to VpnClientControl(
