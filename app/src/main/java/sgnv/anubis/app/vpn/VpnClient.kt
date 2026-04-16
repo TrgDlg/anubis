@@ -19,6 +19,12 @@ enum class VpnClientType(
     V2RAY_TUN("v2rayTun", "com.v2raytun.android"),
     OLCNG("GitHub", "xyz.zarazaex.olc", brand = "olcng"),
     OLCNG_FDROID("F-Droid", "xyz.zarazaex.olc.fdroid", brand = "olcng"),
+    TEAPOD_STREAM("TeapodStream", "com.teapodstream.teapodstream"),
+    KARING("Karing", "com.nebula.karing"),
+    AMNEZIA_VPN("VPN", "org.amnezia.vpn", brand = "Amnezia"),
+    AMNEZIA_WG("WG", "org.amnezia.awg", brand = "Amnezia"),
+    WIREGUARD("Official", "com.wireguard.android", brand = "WireGuard"),
+    WG_TUNNEL("WG Tunnel", "com.zaneschepke.wireguardautotunnel", brand = "WireGuard"),
     V2BOX("V2Box", "dev.hexasoftware.v2box");
 
     /** "v2rayNG (Play)" for branded variants, "NekoBox" for standalones. */
@@ -258,6 +264,50 @@ object VpnClientControls {
                 "-a", "dev.hexasoftware.v2box.action.widget.click",
                 "-n", "dev.hexasoftware.v2box/.receiver.WidgetProvider"
             ),
+        ),
+
+        // TeapodStream: Flutter app with only MainActivity exported, no widget/shortcut API.
+        // MANUAL for now; a PR upstream could add a toggle intent.
+        VpnClientType.TEAPOD_STREAM to VpnClientControl(
+            clientType = VpnClientType.TEAPOD_STREAM,
+            mode = VpnControlMode.MANUAL,
+        ),
+        // AmneziaVPN (Qt): no exported broadcast/activity API for start/stop — only QS Tile
+        // and MainActivity. Fall back to MANUAL (open app, user taps connect).
+        VpnClientType.AMNEZIA_VPN to VpnClientControl(
+            clientType = VpnClientType.AMNEZIA_VPN,
+            mode = VpnControlMode.MANUAL,
+        ),
+
+        // AmneziaWG: exports SET_TUNNEL_UP/DOWN with a required EXTRA_TUNNEL name under
+        // the dangerous CONTROL_TUNNELS permission. Shizuku shell bypasses the permission,
+        // but without a configured tunnel name nothing happens. MANUAL until we add
+        // per-client tunnel-name config in Anubis.
+        VpnClientType.AMNEZIA_WG to VpnClientControl(
+            clientType = VpnClientType.AMNEZIA_WG,
+            mode = VpnControlMode.MANUAL,
+        ),
+
+        // WireGuard official: same SET_TUNNEL_UP/DOWN mechanism as AmneziaWG. MANUAL for now.
+        VpnClientType.WIREGUARD to VpnClientControl(
+            clientType = VpnClientType.WIREGUARD,
+            mode = VpnControlMode.MANUAL,
+        ),
+
+        // WG Tunnel: exports START_TUNNEL/STOP_TUNNEL on RemoteControlReceiver, but gates
+        // commands behind isRemoteControlEnabled + a user-defined remoteKey (EXTRA_KEY).
+        // MANUAL until Anubis gains a key-config UI.
+        VpnClientType.WG_TUNNEL to VpnClientControl(
+            clientType = VpnClientType.WG_TUNNEL,
+            mode = VpnControlMode.MANUAL,
+        ),
+
+
+        // Karing (Flutter): only MainActivity + TileService exported — no broadcast/activity
+        // API surface for external start/stop. MANUAL.
+        VpnClientType.KARING to VpnClientControl(
+            clientType = VpnClientType.KARING,
+            mode = VpnControlMode.MANUAL,
         ),
 
     )
